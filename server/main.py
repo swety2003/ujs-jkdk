@@ -16,57 +16,25 @@ from fastapi import FastAPI
 from fastapi_login import LoginManager
 
 from fastapi import Depends
-from starlette.responses import Response
-
+from starlette.responses import Response, RedirectResponse
 
 SECRET = 'your-secret-key'
 
-
-dbfile="db/users.db"
+manager = LoginManager(SECRET, token_url='/auth/token', use_header=True)
 app = FastAPI()
 
-
-manager = LoginManager(SECRET, token_url='/auth/token', use_header=True)
-
-
-
-
-conn=sqlite3.connect(dbfile)
-c = conn.cursor()
-try:
-    c.execute('''CREATE TABLE USERS(
-    ID      INT     NOT NULL,
-    PWD     INT     NOT NULL,
-    RECV    TEXT    NOT NULL,
-    ENABLED INT     NOT NULL,
-    EXINFO  INT     NOT NULL
-    );
-    ''')
-
-except Exception as e:
-    print(e)
-    pass
-
-try:
-    print("Creating CFG.")
-    c.execute('''CREATE TABLE CFG(
-    SENDERADDR      TEXT     NOT NULL,
-    MAILKEY         TEXT     NOT NULL,
-    APPID           TEXT     NOT NULL,
-    APIKEY          TEXT     NOT NULL,
-    SECRETKEY       TEXT     NOT NULL
-    );''')
-except Exception as e:
-    print(e)
-    pass
-
-pwdMSK="禁止查看密码"
+dbfile = "db/users.db"
 
 
 @manager.user_loader()
 def load_user(email: str):  # could also be an asynchronous function
     user = fake_db.get(email)
     return user
+
+@app.get("/")
+def goHome():
+    response = RedirectResponse(url="index.html")
+    return response
 
 @app.post('/auth/token')
 def login(data: OAuth2PasswordRequestForm = Depends()):
@@ -203,7 +171,11 @@ from Core.Manager import *
 
 @app.post("/start")
 async def START(req:REQ,user = Depends(manager)):
-
+    global th
+    if not th.is_alive():
+        th = threading.Thread(target=start, )
+        th.setDaemon(True)
+        th.start()
     if req.id!=None:
         threading.Thread(target=test,args=(req.id,)).start()
 
@@ -212,6 +184,8 @@ async def START(req:REQ,user = Depends(manager)):
 
     glo.set_value("state", True)
     glo.set_value("targetTime",req.targetTime)
+    # glo.set_value("targetTime",time.strftime('%M:%S',time.localtime(time.time())))
+
     pass
 
         # backgroundTask.add_task(start,lock,req,status)
@@ -236,9 +210,42 @@ def startAPP():
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 
-
 if __name__ == '__main__':
     import GlobalData as glo
+
+
+
+
+    conn = sqlite3.connect(dbfile)
+    c = conn.cursor()
+    try:
+        c.execute('''CREATE TABLE USERS(
+        ID      INT     NOT NULL,
+        PWD     INT     NOT NULL,
+        RECV    TEXT    NOT NULL,
+        ENABLED INT     NOT NULL,
+        EXINFO  INT     NOT NULL
+        );
+        ''')
+
+    except Exception as e:
+        print(e)
+        pass
+
+    try:
+        print("Creating CFG.")
+        c.execute('''CREATE TABLE CFG(
+        SENDERADDR      TEXT     NOT NULL,
+        MAILKEY         TEXT     NOT NULL,
+        APPID           TEXT     NOT NULL,
+        APIKEY          TEXT     NOT NULL,
+        SECRETKEY       TEXT     NOT NULL
+        );''')
+    except Exception as e:
+        print(e)
+        pass
+
+    pwdMSK = "禁止查看密码"
 
     fake_db = {'admin': {'password': input("请设定访问密码:")}}
 
