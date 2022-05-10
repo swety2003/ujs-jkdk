@@ -185,7 +185,10 @@ def start():
             if statue:
                 l.info("时间到,开始打卡!!!")
 
-                __run()
+                # __run()
+                th=threading.Thread(target=__run,)
+                th.start()
+
 
 
 

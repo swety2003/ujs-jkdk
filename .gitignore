@@ -2,6 +2,7 @@
 node_modules
 /dist
 
+users.db
 
 # local env files
 .env.local
