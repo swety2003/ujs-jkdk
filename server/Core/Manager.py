@@ -11,7 +11,7 @@ from .getdata import getdata
 from datetime import datetime
 from Models import *
 
-
+import threading
 
 def showRedirectHistory(reditList):
     text = f'重定向次数:{len(reditList)}\n'
