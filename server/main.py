@@ -247,7 +247,13 @@ if __name__ == '__main__':
 
     pwdMSK = "禁止查看密码"
 
-    fake_db = {'admin': {'password': input("请设定访问密码:")}}
+    import os
+
+    pwd="admin";
+
+    pwd=os.environ.get("ACCESS_KEY")
+
+    fake_db = {'admin': {'password': pwd}}
 
     glo._init()
 
