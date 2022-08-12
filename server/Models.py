@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+from typing import List
 
 class User(BaseModel):
     id: int
@@ -9,7 +9,7 @@ class User(BaseModel):
     extrainfo: str = "无信息"
 
 class Users(BaseModel):
-    data: list[User] =[]
+    data: List[User] =[]
 
 class Config(BaseModel):
     senderaddress:str
